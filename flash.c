@@ -67,10 +67,10 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
 	uint32_t blkremain;    // block remain. how many bytes after @waddr in a block. @blkremain
                            // + @blkofs = hdl->blksize
     flashres_t res;
-    uint8_t *buf = hdl->tmpbuf;
     const uint8_t *_wbuf = wbuf;
+    uint8_t *buf = hdl->tmpbuf;
 
-	if(!hdl || waddr < hdl->startaddr || waddr > hdl->endaddr || !wbuf)
+	if(!hdl || waddr < hdl->startaddr || waddr > hdl->endaddr || !_wbuf)
     {
         return flashres_err;
     }
@@ -109,7 +109,7 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
             CHECK(res);
 			for(i = 0; i < blkremain; i++)
 			{
-                buf[i + blkofs] = _wbuf[i];
+			    buf[i + blkofs] = _wbuf[i];
 			}
             // cover the @tmpbuf to flash @blkseq block
             res = hdl->write(blkseq * (hdl->blksize) + hdl->startaddr, hdl->tmpbuf, hdl->blksize);
@@ -129,7 +129,7 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
 		{
 			blkseq++;
 			blkofs = 0;
-		   	wbuf += blkremain;
+			_wbuf += blkremain;
 			waddr += blkremain;
 		   	wbytes -= blkremain;
 			if(wbytes > hdl->blksize)
@@ -141,6 +141,11 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
                 blkremain = wbytes;
             }
 		}
+
+        if(waddr > hdl->endaddr)
+        {
+            CHECK(1);
+        }
 	}
 
     LOCK(hdl);

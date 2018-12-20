@@ -17,10 +17,10 @@
 
 #include <string.h>
 
-#define RAMDISK_TOTSIZE         (50)
-#define RAMDISK_TOTBLK          (5)
-#define RAMDISK_BLKSIZE         (10)
-#define RAMDISK_STARTADDR       (0)
+#define RAMDISK_TOTSIZE         (512 * 1024)
+#define RAMDISK_TOTBLK          (256)
+#define RAMDISK_BLKSIZE         (2 * 1024)
+#define RAMDISK_STARTADDR       (0x8000000)
 
 static uint8_t rambuf[RAMDISK_TOTSIZE];
 static uint8_t tmpbuf[RAMDISK_BLKSIZE];

@@ -2,7 +2,7 @@
 
                          an universal flash drive frame
                  for the flashes must erase to let 0 turn to be 1
-                 
+
             this file is to demonstrate how to use the flash component
 
 *******************************************************************************/
@@ -15,17 +15,27 @@
 #include <time.h>
 #include <unistd.h>
 
+uint64_t get_system_time(void)
+{
+    struct timeb t;
+
+    ftime(&t);
+    return 1000 * t.time + t.millitm;
+}
+
 int main(void)
 {
     uint8_t *wbuf;
     uint8_t *rbuf;
     uint32_t index, len;
     uint32_t i, j, addr;
-    uint32_t totcnt = 20, errcnt = 0;
+    uint32_t errcnt = 0, totcnt = 3000;
     flashres_t res;
 
     wbuf = malloc(ramdisk.totsize);
     rbuf = malloc(ramdisk.totsize);
+    memset(wbuf, 0, ramdisk.totsize);
+    memset(rbuf, 0, ramdisk.totsize);
 
     printf("start test ...\n");
     res = flash_init(&ramdisk);
@@ -36,14 +46,14 @@ int main(void)
 
     for(i = 0; i < totcnt; i++)
     {
-        sleep(1);
-        srand(time(NULL));
+        usleep(1 * 1000);
+        srand(get_system_time());
         for(index = 0, j = 0; j < ramdisk.totsize; j++)
         {
-            wbuf[index++] = rand() % 0xFF;
+            wbuf[index++] = rand() % (0xFF + 1);
         }
-        len = rand() % (ramdisk.totsize);
         addr = rand() % (ramdisk.totsize) + ramdisk.startaddr;
+        len = rand() % (ramdisk.endaddr - addr + 1 + 1);
 
         printf("test %08dth, wbuf=[ ", i);
         for(j = 0; j < len; j++)
@@ -75,7 +85,7 @@ int main(void)
         if(memcmp(wbuf, rbuf, len))
         {
             errcnt++;
-            printf(",rbuf != wbuf, errcnt=%d\n", errcnt);
+            printf(", rbuf != wbuf, errcnt=%d\n", errcnt);
         }
         else
         {
@@ -83,14 +93,16 @@ int main(void)
         }
     }
 
-    printf("total test count=%d, error count=%d\n", totcnt, errcnt);
+    printf("\ntotal test_count=%d, error_count=%d\n", totcnt, errcnt);
     printf("done\n");
+    free(wbuf);
+    free(rbuf);
     return 0;
 
 err:
+    printf("done\n");
     free(wbuf);
     free(rbuf);
-    printf("done\n");
     return -1;
 }
 

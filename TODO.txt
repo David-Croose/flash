@@ -1,0 +1,1 @@
+* should add support for inconstant block size flash

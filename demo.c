@@ -13,27 +13,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 int main(void)
 {
-#define CHECK(x)    if((x)) { printf("err in %s:%d\n", __FILE__, __LINE__); goto err; }
-
     uint8_t *wbuf;
     uint8_t *rbuf;
     uint32_t index, len;
     uint32_t i, j, addr;
-    uint32_t totcnt = 1000, errcnt = 0;
+    uint32_t totcnt = 20, errcnt = 0;
     flashres_t res;
 
     wbuf = malloc(ramdisk.totsize);
     rbuf = malloc(ramdisk.totsize);
 
-    printf("start test\n");
+    printf("start test ...\n");
     res = flash_init(&ramdisk);
-    CHECK(res);
+    if(res)
+    {
+        printf("init failed, res=%d\n", res);
+    }
 
     for(i = 0; i < totcnt; i++)
     {
+        sleep(1);
         srand(time(NULL));
         for(index = 0, j = 0; j < ramdisk.totsize; j++)
         {
@@ -42,24 +45,41 @@ int main(void)
         len = rand() % (ramdisk.totsize);
         addr = rand() % (ramdisk.totsize) + ramdisk.startaddr;
 
-        //=================================================
-        /// wbuf[0] = 0xAA;
-        /// wbuf[1] = 0xBB;
-        /// wbuf[2] = 0xCC;
-        /// wbuf[3] = 0xDD;
-        /// wbuf[4] = 0xEE;
-        /// len = 5;
-        /// addr = 0;
-        //-------------------------------------------------
+        printf("test %08dth, wbuf=[ ", i);
+        for(j = 0; j < len; j++)
+        {
+            printf("%02X ", wbuf[j]);
+        }
+        printf("], addr=%d, len=%d\n", addr, len);
 
         res = flash_write(&ramdisk, addr, wbuf, len);
-        CHECK(res);
+        if(res)
+        {
+            printf("write failed, res=%d\n", res);
+            goto err;
+        }
         res = flash_read(&ramdisk, addr, rbuf, len);
-        CHECK(res);
+        if(res)
+        {
+            printf("read failed, res=%d\n", res);
+            goto err;
+        }
+
+        printf("                 rbuf=[ ");
+        for(j = 0; j < len; j++)
+        {
+            printf("%02X ", rbuf[j]);
+        }
+        printf("]");
 
         if(memcmp(wbuf, rbuf, len))
         {
             errcnt++;
+            printf(",rbuf != wbuf, errcnt=%d\n", errcnt);
+        }
+        else
+        {
+            printf("\n");
         }
     }
 

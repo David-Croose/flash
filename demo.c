@@ -32,17 +32,22 @@ int main(void)
     uint32_t errcnt = 0, totcnt = 10;
     flashres_t res;
 
-    wbuf = malloc(ramdisk.totsize);
-    rbuf = malloc(ramdisk.totsize);
-    memset(wbuf, 0, ramdisk.totsize);
-    memset(rbuf, 0, ramdisk.totsize);
-
     printf("start test ...\n");
     res = flash_init(&ramdisk);
     if(res)
     {
         printf("init failed, res=%d\n", res);
     }
+
+    wbuf = malloc(ramdisk.totsize);
+    rbuf = malloc(ramdisk.totsize);
+    if(!wbuf || !rbuf)
+    {
+        printf("malloc failed!\n");
+        goto err;
+    }
+    memset(wbuf, 0, ramdisk.totsize);
+    memset(rbuf, 0, ramdisk.totsize);
 
     for(i = 0; i < totcnt; i++)
     {

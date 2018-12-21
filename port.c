@@ -23,8 +23,8 @@
 #if (USE_DEMO_PORT_1)
 
 #define RAMDISK_TOTSIZE         (30)
-#define RAMDISK_TOTBLK          (6)
-#define RAMDISK_BLKSIZE         (5)
+#define RAMDISK_TOTBLK          (3)
+#define RAMDISK_BLKSIZE         (10)
 #define RAMDISK_STARTADDR       (0)
 
 static uint8_t rambuf[RAMDISK_TOTSIZE];
@@ -82,7 +82,9 @@ static flashres_t read(uint32_t addr, void *rbuf, uint32_t rbytes)
 
 #endif
 
-// user's @flashhdl_t variable initialize here
+/**
+ * the user flashhdl_t structure initialization function
+ */
 void flash_structure_init(void)
 {
 #if (USE_DEMO_PORT_1)

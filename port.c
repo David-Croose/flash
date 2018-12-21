@@ -3,24 +3,29 @@
                          an universal flash drive frame
                  for the flashes must erase to let 0 turn to be 1
 
+  this file contains two demo ports: USE_DEMO_PORT_1 and USE_DEMO_PORT_2, both
+  of them uses a RAM room as their memory, but they work like a real flash
+  chip, in other words, user must perform an erase operation to let bit 0
+  turns to be 1, write it direct will fail. what's the differences between them
+  is the former's all block size are the same while the latter not
+
 *******************************************************************************/
 
 // add your head file here
 // #include "user_hardware.h"
 
 #include <stdint.h>
+#include <string.h>
 #include "flash.h"
 
-#define USE_DEMO_PORT           (1)         // this is a simple ram disk demo, you
-                                            // can make it to be 0 to disable it
-#if (USE_DEMO_PORT)
+#define USE_DEMO_PORT_1           (1)         // this is a simple ram disk demo, you
+                                              // can make it to be 0 to disable it
+#if (USE_DEMO_PORT_1)
 
-#include <string.h>
-
-#define RAMDISK_TOTSIZE         (512 * 1024)
-#define RAMDISK_TOTBLK          (256)
-#define RAMDISK_BLKSIZE         (2 * 1024)
-#define RAMDISK_STARTADDR       (0x8000000)
+#define RAMDISK_TOTSIZE         (30)
+#define RAMDISK_TOTBLK          (6)
+#define RAMDISK_BLKSIZE         (5)
+#define RAMDISK_STARTADDR       (0)
 
 static uint8_t rambuf[RAMDISK_TOTSIZE];
 static uint8_t tmpbuf[RAMDISK_BLKSIZE];
@@ -75,24 +80,29 @@ static flashres_t read(uint32_t addr, void *rbuf, uint32_t rbytes)
     return flashres_ok;
 }
 
-flashhdl_t ramdisk = {
-    /* flashres_t (*init)(void);                                              */ init,
-    /* flashres_t (*write)(uint32_t addr, const void *wbuf, uint32_t wbytes); */ write,
-    /* flashres_t (*erase)(uint32_t addr);                                    */ erase,
-    /* flashres_t (*read)(uint32_t addr, void *rbuf, uint32_t rbytes);        */ read,
-    /* flashres_t (*lock)(void);                                              */ 0,
-    /* flashres_t (*unlock)(void);                                            */ 0,
-    /* flashbool_t writable;                                                  */ flash_true,
-    /* uint32_t totsize;                                                      */ RAMDISK_TOTSIZE,
-    /* uint32_t totblk;                                                       */ RAMDISK_TOTBLK,
-    /* uint32_t blksize;                                                      */ RAMDISK_BLKSIZE,
-    /* uint32_t startaddr;                                                    */ RAMDISK_STARTADDR,
-    /* uint32_t endaddr;                                                      */ 0,
-    /* void *tmpbuf;                                                          */ tmpbuf,
-    /* void *extra;                                                           */ 0,
-};
-
 #endif
 
-// you could add your @flashhdl_t variable definition below
+// user's @flashhdl_t variable initialize here
+void flash_structure_init(void)
+{
+#if (USE_DEMO_PORT_1)
+    memset(&ramdisk, 0, sizeof(ramdisk));
+    ramdisk.init = init;
+    ramdisk.write = write;
+    ramdisk.read = read;
+    ramdisk.erase = erase;
+    ramdisk.writable = flash_true;
+    ramdisk.totsize = RAMDISK_TOTSIZE;
+    ramdisk.totblk = RAMDISK_TOTBLK;
+    ramdisk.blksize = RAMDISK_BLKSIZE;
+    ramdisk.startaddr = RAMDISK_STARTADDR;
+    ramdisk.tmpbuf = tmpbuf;
+#endif
+
+    // user code here
+
+}
+
+
+
 

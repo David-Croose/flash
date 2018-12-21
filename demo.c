@@ -29,7 +29,7 @@ int main(void)
     uint8_t *rbuf;
     uint32_t index, len;
     uint32_t i, j, addr;
-    uint32_t errcnt = 0, totcnt = 3000;
+    uint32_t errcnt = 0, totcnt = 10;
     flashres_t res;
 
     wbuf = malloc(ramdisk.totsize);

@@ -185,15 +185,15 @@ flashres_t flash_init(flashhdl_t *hdl)
 flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16_t wbytes)
 {
     uint32_t i;
-	uint32_t blkseq;	   // block sequence. [0, hdl->totblk - 1]
-	uint32_t blkofs;	   // block offset. how many bytes before @waddr in a block
-	uint32_t blkremain;    // block remain. how many bytes after @waddr in a block. @blkremain
+    uint32_t blkseq;       // block sequence. [0, hdl->totblk - 1]
+    uint32_t blkofs;       // block offset. how many bytes before @waddr in a block
+    uint32_t blkremain;    // block remain. how many bytes after @waddr in a block. @blkremain
                            // + @blkofs = hdl->blksize
     flashres_t res;
     const uint8_t *_wbuf = wbuf;
     uint8_t *buf = hdl->tmpbuf;
 
-	if(!hdl || waddr < hdl->startaddr || (waddr + wbytes > hdl->endaddr + 1) || !_wbuf)
+    if(!hdl || waddr < hdl->startaddr || (waddr + wbytes > hdl->endaddr + 1) || !_wbuf)
     {
         return flashres_err;
     }
@@ -204,39 +204,39 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
 
     UNLOCK(hdl);
 
-	blkseq = absaddr2blkseq(hdl, waddr);
-	blkofs = get_blk_inner_ofs(hdl, waddr);
-	blkremain = get_blksz(hdl, blkseq) - blkofs;
+    blkseq = absaddr2blkseq(hdl, waddr);
+    blkofs = get_blk_inner_ofs(hdl, waddr);
+    blkremain = get_blksz(hdl, blkseq) - blkofs;
     if(wbytes < blkremain)
     {
         blkremain = wbytes;
     }
 
-	while(1)
-	{
+    while(1)
+    {
         // read whole @blkseq block
-		res = hdl->read(blkseq2absaddr(hdl, blkseq), hdl->tmpbuf, get_blksz(hdl, blkseq));
+        res = hdl->read(blkseq2absaddr(hdl, blkseq), hdl->tmpbuf, get_blksz(hdl, blkseq));
         CHECK(res);
 
-		for(i = 0; i < blkremain; i++)
-		{
+        for(i = 0; i < blkremain; i++)
+        {
             if(buf[blkofs + i] != 0xFF)
             {
                 break;
             }
-		}
-		if(i < blkremain)    // if the @blkseq block should be erased
-		{
-			res = hdl->erase(blkseq2absaddr(hdl, blkseq));  // TODO  the function @blkseq2absaddr can be refine
+        }
+        if(i < blkremain)    // if the @blkseq block should be erased
+        {
+            res = hdl->erase(blkseq2absaddr(hdl, blkseq));  // TODO  the function @blkseq2absaddr can be refine
             CHECK(res);
-			for(i = 0; i < blkremain; i++)
-			{
-			    buf[i + blkofs] = _wbuf[i];
-			}
+            for(i = 0; i < blkremain; i++)
+            {
+                buf[i + blkofs] = _wbuf[i];
+            }
             // cover the @tmpbuf to flash @blkseq block
             res = hdl->write(blkseq2absaddr(hdl, blkseq), hdl->tmpbuf, get_blksz(hdl, blkseq));
             CHECK(res);
-		}
+        }
         else
         {
             res = hdl->write(waddr, _wbuf, blkremain);
@@ -247,23 +247,23 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
         {
             break;
         }
-		else
-		{
-			blkseq++;
-			blkofs = 0;
-			_wbuf += blkremain;
-			waddr += blkremain;
-		   	wbytes -= blkremain;
-			if(wbytes > get_blksz(hdl, blkseq))
+        else
+        {
+            blkseq++;
+            blkofs = 0;
+            _wbuf += blkremain;
+            waddr += blkremain;
+            wbytes -= blkremain;
+            if(wbytes > get_blksz(hdl, blkseq))
             {
                 blkremain = get_blksz(hdl, blkseq);
             }
-			else
+            else
             {
                 blkremain = wbytes;
             }
-		}
-	}
+        }
+    }
 
     LOCK(hdl);
     return flashres_ok;
@@ -282,7 +282,7 @@ err:
  */
 flashres_t flash_read(flashhdl_t *hdl, uint32_t raddr, void *rbuf, uint16_t rbytes)
 {
-	if(!hdl || raddr < hdl->startaddr || raddr > hdl->endaddr || !rbuf)
+    if(!hdl || raddr < hdl->startaddr || raddr > hdl->endaddr || !rbuf)
     {
         return flashres_err;
     }

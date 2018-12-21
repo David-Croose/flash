@@ -25,13 +25,14 @@ static uint32_t absaddr2blkseq(flashhdl_t *hdl, uint32_t addr)
 
     if(hdl->blkuneq_flag == flash_true)
     {
-        for(i = 0; i < hdl->totblk; i++)
+        for(i = 1; i < hdl->totblk; i++)
         {
-            if(addr >= hdl->blktbl[i].startaddr)
+            if(addr < hdl->blktbl[i].startaddr)
             {
-                return i;
+                break;
             }
         }
+        return (i - 1);
     }
 
     return ((addr - hdl->startaddr) / (hdl->blksize));
@@ -133,6 +134,14 @@ flashres_t flash_init(flashhdl_t *hdl)
         if(sum != hdl->totsize)
         {
             return flashres_err;
+        }
+
+        for(i = 0; i < hdl->totblk - 1; i++)
+        {
+            if((blkseq2absaddr(hdl, i) + get_blksz(hdl, i)) != blkseq2absaddr(hdl, i + 1))
+            {
+                return flashres_err;
+            }
         }
     }
     else

@@ -1,1 +1,1 @@
-* should add support for inconstant block size flash
+* should add a lot of hardware driver support into it

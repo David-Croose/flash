@@ -18,15 +18,18 @@
 #include <string.h>
 #include "flash.h"
 
-#define USE_DEMO_PORT_1           (1)         // this is a simple ram disk demo, you
-                                              // can make it to be 0 to disable it
+// user configure here
+#define USE_DEMO_PORT_1           (1)
+#define USE_DEMO_PORT_2           (0)
+
 #if (USE_DEMO_PORT_1)
 
-#define RAMDISK_TOTSIZE         (30)
-#define RAMDISK_TOTBLK          (3)
-#define RAMDISK_BLKSIZE         (10)
-#define RAMDISK_STARTADDR       (0)
+#define RAMDISK_TOTSIZE         (512 * 1024)
+#define RAMDISK_TOTBLK          (256)
+#define RAMDISK_BLKSIZE         (2 * 1024)
+#define RAMDISK_STARTADDR       (0x8000000)
 
+flashhdl_t ramdisk;
 static uint8_t rambuf[RAMDISK_TOTSIZE];
 static uint8_t tmpbuf[RAMDISK_BLKSIZE];
 
@@ -82,6 +85,88 @@ static flashres_t read(uint32_t addr, void *rbuf, uint32_t rbytes)
 
 #endif
 
+#if (USE_DEMO_PORT_2)
+
+#define RAMDISK2_TOTSIZE         (300)
+#define RAMDISK2_TOTBLK          (sizeof(blktbl) / sizeof(blktbl[0]))
+#define RAMDISK2_STARTADDR       (0x800)
+
+flashhdl_t ramdisk2;
+static uint8_t rambuf2[RAMDISK2_TOTSIZE];
+static uint8_t tmpbuf2[80];     // sizeof(tmpbuf2) = @the biggest block size
+static blktbl_t blktbl[] = {
+        {RAMDISK2_STARTADDR,       80},
+        {RAMDISK2_STARTADDR + 80,  60},
+        {RAMDISK2_STARTADDR + 140, 60},
+        {RAMDISK2_STARTADDR + 200, 50},
+        {RAMDISK2_STARTADDR + 250, 50},
+};
+
+static flashres_t init2(void)
+{
+    return flashres_ok;
+}
+
+static flashres_t write2(uint32_t addr, const void *wbuf, uint32_t wbytes)
+{
+    uint32_t i, j;
+    uint8_t *p;
+    const uint8_t *_wbuf = wbuf;
+    uint8_t mask;
+
+    for(i = 0, p = &rambuf2[addr - RAMDISK2_STARTADDR];
+        i < wbytes;
+        i++, p++, _wbuf++)
+    {
+        for(mask = 1, j = 0; j < 8; j++, mask <<= 1)
+        {
+            if((*_wbuf) & mask)
+            {
+                if(!((*p) & mask))
+                {
+                    // if the flash bit is 0, we can not write it to 1
+                    return flashres_err;
+                }
+
+                (*p) |= mask;
+            }
+            else
+            {
+                (*p) &= ~mask;
+            }
+        }
+    }
+
+    return flashres_ok;
+}
+
+static flashres_t erase2(uint32_t addr)
+{
+    uint32_t i;
+
+    for(i = 0; i < RAMDISK2_TOTBLK; i++)
+    {
+        if(addr == blktbl[i].startaddr)
+        {
+            break;
+        }
+    }
+    if(i >= RAMDISK2_TOTBLK)
+    {
+        return flashres_err;
+    }
+    memset(&rambuf2[blktbl[i].startaddr - RAMDISK2_STARTADDR], 0xFF, blktbl[i].size);
+    return flashres_ok;
+}
+
+static flashres_t read2(uint32_t addr, void *rbuf, uint32_t rbytes)
+{
+    memcpy(rbuf, &rambuf2[addr - RAMDISK2_STARTADDR], rbytes);
+    return flashres_ok;
+}
+
+#endif
+
 /**
  * the user flashhdl_t structure initialization function
  */
@@ -101,10 +186,22 @@ void flash_structure_init(void)
     ramdisk.tmpbuf = tmpbuf;
 #endif
 
+#if (USE_DEMO_PORT_2)
+    memset(&ramdisk2, 0, sizeof(ramdisk2));
+    ramdisk2.init = init2;
+    ramdisk2.write = write2;
+    ramdisk2.read = read2;
+    ramdisk2.erase = erase2;
+    ramdisk2.writable = flash_true;
+    ramdisk2.totsize = RAMDISK2_TOTSIZE;
+    ramdisk2.totblk = RAMDISK2_TOTBLK;
+    ramdisk2.blksize = 0;
+    ramdisk2.startaddr = RAMDISK2_STARTADDR;
+    ramdisk2.tmpbuf = tmpbuf2;
+    ramdisk2.blkuneq_flag = flash_true;
+    ramdisk2.blktbl = blktbl;
+#endif
+
     // user code here
 
 }
-
-
-
-

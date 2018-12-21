@@ -29,50 +29,42 @@ uint64_t get_system_time(void)
 
 int main(void)
 {
+    flashhdl_t *flash_hdl = &ramdisk;
     uint8_t *wbuf;
     uint8_t *rbuf;
     uint32_t index, len;
-    uint32_t i, j, addr;
+    uint32_t i = 0, j, addr;
     uint32_t errcnt = 0, totcnt = TOT_TEST_TS;
     flashres_t res;
 
     printf("start test ...\n");
-    res = flash_init(&ramdisk);
+    res = flash_init(flash_hdl);
     if(res)
     {
         printf("init failed, res=%d\n", res);
+        goto err;
     }
 
-    wbuf = malloc(ramdisk.totsize);
-    rbuf = malloc(ramdisk.totsize);
+    wbuf = malloc(flash_hdl->totsize);
+    rbuf = malloc(flash_hdl->totsize);
     if(!wbuf || !rbuf)
     {
         printf("malloc failed!\n");
         goto err;
     }
-    memset(wbuf, 0, ramdisk.totsize);
-    memset(rbuf, 0, ramdisk.totsize);
+    memset(wbuf, 0, flash_hdl->totsize);
+    memset(rbuf, 0, flash_hdl->totsize);
 
     for(i = 0; i < totcnt; i++)
     {
         usleep(1 * 1000);
         srand(get_system_time());
-        for(index = 0, j = 0; j < ramdisk.totsize; j++)
+        for(index = 0, j = 0; j < flash_hdl->totsize; j++)
         {
             wbuf[index++] = rand() % (0xFF + 1);
         }
-        addr = rand() % (ramdisk.totsize) + ramdisk.startaddr;
-        len = rand() % (ramdisk.endaddr - addr + 1 + 1);
-
-        //==================================================
-        if(0)
-        {
-            const uint8_t _wbuf[30] = {0xA5, 0x7C, 0x50, 0xFA, 0xFA, 0xAD, 0x6C, 0xD7, 0x12, 0x9A, 0x47, 0xA3, 0xD5, 0x1C, 0xA1};
-            memcpy(wbuf, _wbuf, 30);
-            addr=11;
-            len=15;
-        }
-        //--------------------------------------------------
+        addr = rand() % (flash_hdl->totsize) + flash_hdl->startaddr;
+        len = rand() % (flash_hdl->endaddr - addr + 1 + 1);
 
         printf("test %08dth, wbuf=[ ", i);
         for(j = 0; j < len; j++)
@@ -81,13 +73,13 @@ int main(void)
         }
         printf("], addr=%d, len=%d\n", addr, len);
 
-        res = flash_write(&ramdisk, addr, wbuf, len);
+        res = flash_write(flash_hdl, addr, wbuf, len);
         if(res)
         {
             printf("write failed, res=%d\n", res);
             goto err;
         }
-        res = flash_read(&ramdisk, addr, rbuf, len);
+        res = flash_read(flash_hdl, addr, rbuf, len);
         if(res)
         {
             printf("read failed, res=%d\n", res);
@@ -120,15 +112,8 @@ int main(void)
 
 err:
     printf("\ntest done, test_count=%d(total_count=%d), error_count=%d\n", i, totcnt, errcnt);
-    printf("done\n");
+    printf("done with error!\n");
     free(wbuf);
     free(rbuf);
     return -1;
 }
-
-
-
-
-
-
-

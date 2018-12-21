@@ -15,6 +15,10 @@
 #include <time.h>
 #include <unistd.h>
 
+// user configure here
+// total test times
+#define TOT_TEST_TS            (1000)
+
 uint64_t get_system_time(void)
 {
     struct timeb t;
@@ -29,7 +33,7 @@ int main(void)
     uint8_t *rbuf;
     uint32_t index, len;
     uint32_t i, j, addr;
-    uint32_t errcnt = 0, totcnt = 10;
+    uint32_t errcnt = 0, totcnt = TOT_TEST_TS;
     flashres_t res;
 
     printf("start test ...\n");
@@ -59,6 +63,16 @@ int main(void)
         }
         addr = rand() % (ramdisk.totsize) + ramdisk.startaddr;
         len = rand() % (ramdisk.endaddr - addr + 1 + 1);
+
+        //==================================================
+        if(0)
+        {
+            const uint8_t _wbuf[30] = {0xA5, 0x7C, 0x50, 0xFA, 0xFA, 0xAD, 0x6C, 0xD7, 0x12, 0x9A, 0x47, 0xA3, 0xD5, 0x1C, 0xA1};
+            memcpy(wbuf, _wbuf, 30);
+            addr=11;
+            len=15;
+        }
+        //--------------------------------------------------
 
         printf("test %08dth, wbuf=[ ", i);
         for(j = 0; j < len; j++)
@@ -98,13 +112,14 @@ int main(void)
         }
     }
 
-    printf("\ntotal test_count=%d, error_count=%d\n", totcnt, errcnt);
+    printf("\ntest done, test_count=%d(total_count=%d), error_count=%d\n", i, totcnt, errcnt);
     printf("done\n");
     free(wbuf);
     free(rbuf);
     return 0;
 
 err:
+    printf("\ntest done, test_count=%d(total_count=%d), error_count=%d\n", i, totcnt, errcnt);
     printf("done\n");
     free(wbuf);
     free(rbuf);

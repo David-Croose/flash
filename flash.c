@@ -83,7 +83,7 @@ static uint32_t reladdr2absaddr(flashhdl_t *hdl, uint32_t addr)
  */
 static uint32_t get_blk_inner_ofs(flashhdl_t *hdl, uint32_t addr)
 {
-    return (addr - absaddr2reladdr(hdl, blkseq2absaddr(hdl, absaddr2blkseq(hdl, addr))));
+    return (addr - blkseq2absaddr(hdl, absaddr2blkseq(hdl, addr)));
 }
 
 /**
@@ -184,7 +184,7 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
     const uint8_t *_wbuf = wbuf;
     uint8_t *buf = hdl->tmpbuf;
 
-	if(!hdl || waddr < hdl->startaddr || (waddr + wbytes - 1 > hdl->endaddr) || !_wbuf)
+	if(!hdl || waddr < hdl->startaddr || (waddr + wbytes > hdl->endaddr + 1) || !_wbuf)
     {
         return flashres_err;
     }
@@ -218,7 +218,7 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
 		}
 		if(i < blkremain)    // if the @blkseq block should be erased
 		{
-			res = hdl->erase(blkseq2absaddr(hdl, blkseq));
+			res = hdl->erase(blkseq2absaddr(hdl, blkseq));  // TODO  the function @blkseq2absaddr can be refine
             CHECK(res);
 			for(i = 0; i < blkremain; i++)
 			{

@@ -24,8 +24,8 @@
 
 #if (USE_DEMO_PORT_1)
 
-#define RAMDISK_TOTSIZE         (512 * 1024)
-#define RAMDISK_TOTBLK          (256)
+#define RAMDISK_TOTSIZE         (10 * 1024)
+#define RAMDISK_TOTBLK          ((RAMDISK_TOTSIZE) / (RAMDISK_BLKSIZE))
 #define RAMDISK_BLKSIZE         (2 * 1024)
 #define RAMDISK_STARTADDR       (0x8000000)
 

@@ -160,7 +160,7 @@ flashres_t flash_init(flashhdl_t *hdl)
     if(!hdl->write)
     {
         hdl->writable = flash_false;
-        hdl->erase = NULL;
+        hdl->erase = 0;
     }
     else
     {

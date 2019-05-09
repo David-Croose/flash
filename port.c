@@ -19,14 +19,14 @@
 #include "flash.h"
 
 // user configure here
-#define USE_DEMO_PORT_1           (1)
-#define USE_DEMO_PORT_2           (0)
+#define USE_DEMO_PORT_1           (0)
+#define USE_DEMO_PORT_2           (1)
 
 #if (USE_DEMO_PORT_1)
 
-#define RAMDISK_TOTSIZE         (10 * 1024)
+#define RAMDISK_TOTSIZE         (100)
 #define RAMDISK_TOTBLK          ((RAMDISK_TOTSIZE) / (RAMDISK_BLKSIZE))
-#define RAMDISK_BLKSIZE         (2 * 1024)
+#define RAMDISK_BLKSIZE         (10)
 #define RAMDISK_STARTADDR       (0x8000000)
 
 flashhdl_t ramdisk;

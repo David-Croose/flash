@@ -29,7 +29,7 @@ uint64_t get_system_time(void)
 
 int main(void)
 {
-    flashhdl_t *flash_hdl = &ramdisk;
+    flashhdl_t *flash_hdl = &ramdisk2;
     uint8_t *wbuf;
     uint8_t *rbuf;
     uint32_t index, len;

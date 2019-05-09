@@ -37,7 +37,7 @@ typedef struct {
     flashres_t (*erase)(uint32_t addr);
     flashres_t (*read)(uint32_t addr, void *rbuf, uint32_t rbytes);
     flashres_t (*lock)(void);
-    flashres_t (*unlock)(void);
+    void (*unlock)(void);
 
     // the flash characteristic
     flashbool_t writable;                     // you don't need to configure this variable, the routin will set it

@@ -9,7 +9,7 @@
 
 #define CHECK(x)                     if((x)) { goto err; }
 #define LOCK(x)                      if(((x)->lock) && ((x)->lock())) { goto err; }
-#define UNLOCK(x)                    if(((x)->unlock) && ((x)->unlock())) { goto err; }
+#define UNLOCK(x)                    if((x)->unlock) { (x)->unlock(); }
 
 extern void flash_structure_init(void);
 
@@ -202,7 +202,7 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
         return flashres_ok;
     }
 
-    UNLOCK(hdl);
+    LOCK(hdl);
 
     blkseq = absaddr2blkseq(hdl, waddr);
     blkofs = get_blk_inner_ofs(hdl, waddr);
@@ -265,10 +265,10 @@ flashres_t flash_write(flashhdl_t *hdl, uint32_t waddr, const void *wbuf, uint16
         }
     }
 
-    LOCK(hdl);
+    UNLOCK(hdl);
     return flashres_ok;
 err:
-    LOCK(hdl);
+    UNLOCK(hdl);
     return flashres_err;
 }
 
@@ -282,6 +282,8 @@ err:
  */
 flashres_t flash_read(flashhdl_t *hdl, uint32_t raddr, void *rbuf, uint16_t rbytes)
 {
+    flashres_t res = flashres_err;
+
     if(!hdl || raddr < hdl->startaddr || raddr > hdl->endaddr || !rbuf)
     {
         return flashres_err;
@@ -291,5 +293,11 @@ flashres_t flash_read(flashhdl_t *hdl, uint32_t raddr, void *rbuf, uint16_t rbyt
         return flashres_ok;
     }
 
-    return hdl->read(raddr, rbuf, rbytes);
+    LOCK(hdl);
+
+    res = hdl->read(raddr, rbuf, rbytes);
+
+err:
+    UNLOCK(hdl);
+    return res;
 }

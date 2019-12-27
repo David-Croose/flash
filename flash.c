@@ -55,28 +55,6 @@ static uint32_t blkseq2absaddr(flashhdl_t *hdl, uint32_t seq)
 }
 
 /**
- * absolute address to relative address
- * @param hdl: the flash handle
- * @param addr: absolute address
- * @return: relative address
- */
-static uint32_t absaddr2reladdr(flashhdl_t *hdl, uint32_t addr)
-{
-    return (addr - hdl->startaddr);
-}
-
-/**
- * relative address to absolute address
- * @param hdl: the flash handle
- * @param addr: relative address
- * @return: absolute address
- */
-static uint32_t reladdr2absaddr(flashhdl_t *hdl, uint32_t addr)
-{
-    return (addr + hdl->startaddr);
-}
-
-/**
  * get block inner offset address
  * @param hdl: the flash handle
  * @param addr: absolute address
